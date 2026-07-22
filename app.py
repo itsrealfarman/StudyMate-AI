@@ -3,6 +3,7 @@ import streamlit as st
 from utils.pdf_reader import extract_text
 from utils.text_splitter import split_text
 from utils.vector_store import create_vector_store
+from utils.search import search_chunks
 
 st.set_page_config(
     page_title="StudyMate AI",
@@ -16,6 +17,7 @@ st.write("Your AI-Powered Study Assistant")
 uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
 
 if uploaded_file:
+
     text = extract_text(uploaded_file)
 
     chunks = split_text(text)
@@ -31,3 +33,16 @@ if uploaded_file:
     st.subheader("Chunks")
     st.write(f"Total Chunks: {len(chunks)}")
     st.write(chunks[0])
+
+
+    question = st.text_input("Ask a question about your PDF")
+
+    if question:
+
+        results = search_chunks(vector_store, question)
+
+        st.subheader("Relevant Chunks")
+
+        for doc in results:
+            st.write(doc.page_content)
+            st.write("---")
