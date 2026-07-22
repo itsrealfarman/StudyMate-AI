@@ -14,10 +14,16 @@ st.set_page_config(
 )
 
 
+# Chat memory
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+
 st.title("🎓 StudyMate AI")
 st.write("Your AI-Powered PDF Study Assistant")
 
 
+# Upload PDF
 uploaded_file = st.file_uploader(
     "Upload your PDF",
     type=["pdf"]
@@ -26,41 +32,82 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file:
 
-    text = extract_text(uploaded_file)
+    # Process PDF only once
+    if "vector_store" not in st.session_state:
 
-    chunks = split_text(text)
+        with st.spinner("Processing document..."):
 
-    vector_store = create_vector_store(chunks)
+            text = extract_text(uploaded_file)
+
+            chunks = split_text(text)
+
+            vector_store = create_vector_store(chunks)
+
+            st.session_state.vector_store = vector_store
 
 
-    st.success("✅ Document processed successfully!")
+        st.success("✅ Document processed successfully!")
 
 
-    question = st.text_input(
+    # Show previous chat
+    for message in st.session_state.messages:
+
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
+
+
+    # Chat input
+    question = st.chat_input(
         "Ask a question about your PDF"
     )
 
 
     if question:
 
-        with st.spinner("Thinking... 🤖"):
-
-            results = search_chunks(
-                vector_store,
-                question
-            )
-
-            answer = generate_answer(
-                question,
-                results
-            )
+        # User message
+        st.session_state.messages.append(
+            {
+                "role": "user",
+                "content": question
+            }
+        )
 
 
-        st.subheader("🤖 StudyMate AI Answer")
+        with st.chat_message("user"):
+            st.write(question)
 
-        st.write(answer)
+
+        # Generate answer
+        with st.chat_message("assistant"):
+
+            with st.spinner("Thinking... 🤖"):
+
+                results = search_chunks(
+                    st.session_state.vector_store,
+                    question
+                )
+
+                answer = generate_answer(
+    question,
+    results,
+    st.session_state.messages
+)
+                
 
 
+            st.write(answer)
+
+
+        # Save AI response
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": answer
+            }
+        )
+
+
+        # Sources
         with st.expander("📚 View Sources"):
 
             for doc in results:
