@@ -5,16 +5,24 @@ from utils.text_splitter import split_text
 from utils.vector_store import create_vector_store
 from utils.search import search_chunks
 from utils.qa_chain import generate_answer
+
+
 st.set_page_config(
     page_title="StudyMate AI",
     page_icon="🎓",
-    layout="wide"
+    layout="centered"
 )
 
-st.title("🎓 StudyMate AI")
-st.write("Your AI-Powered Study Assistant")
 
-uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
+st.title("🎓 StudyMate AI")
+st.write("Your AI-Powered PDF Study Assistant")
+
+
+uploaded_file = st.file_uploader(
+    "Upload your PDF",
+    type=["pdf"]
+)
+
 
 if uploaded_file:
 
@@ -24,30 +32,37 @@ if uploaded_file:
 
     vector_store = create_vector_store(chunks)
 
-    st.success("PDF Loaded Successfully!")
-    st.success("Vector Database Created!")
 
-    st.subheader("Extracted Text")
-    st.write(text[:2000])
+    st.success("✅ Document processed successfully!")
 
-    st.subheader("Chunks")
-    st.write(f"Total Chunks: {len(chunks)}")
-    st.write(chunks[0])
 
-    question = st.text_input("Ask a question about your PDF")
+    question = st.text_input(
+        "Ask a question about your PDF"
+    )
+
 
     if question:
 
-        results = search_chunks(vector_store, question)
+        with st.spinner("Thinking... 🤖"):
 
-        answer = generate_answer(question, results)
+            results = search_chunks(
+                vector_store,
+                question
+            )
+
+            answer = generate_answer(
+                question,
+                results
+            )
+
 
         st.subheader("🤖 StudyMate AI Answer")
 
         st.write(answer)
 
-        st.subheader("📚 Sources")
 
-        for doc in results:
-            st.write(doc.page_content)
-            st.write("---")
+        with st.expander("📚 View Sources"):
+
+            for doc in results:
+                st.write(doc.page_content)
+                st.divider()
