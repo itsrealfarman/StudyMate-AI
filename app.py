@@ -4,7 +4,7 @@ from utils.pdf_reader import extract_text
 from utils.text_splitter import split_text
 from utils.vector_store import create_vector_store
 from utils.search import search_chunks
-
+from utils.qa_chain import generate_answer
 st.set_page_config(
     page_title="StudyMate AI",
     page_icon="🎓",
@@ -34,14 +34,19 @@ if uploaded_file:
     st.write(f"Total Chunks: {len(chunks)}")
     st.write(chunks[0])
 
-
     question = st.text_input("Ask a question about your PDF")
 
     if question:
 
         results = search_chunks(vector_store, question)
 
-        st.subheader("Relevant Chunks")
+        answer = generate_answer(question, results)
+
+        st.subheader("🤖 StudyMate AI Answer")
+
+        st.write(answer)
+
+        st.subheader("📚 Sources")
 
         for doc in results:
             st.write(doc.page_content)
