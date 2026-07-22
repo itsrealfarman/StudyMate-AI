@@ -1,13 +1,11 @@
-from langchain_openai import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
 
 def create_vector_store(chunks):
-    embeddings = OpenAIEmbeddings(
-        api_key=os.getenv("OPENAI_API_KEY")
+
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
     vector_store = FAISS.from_texts(

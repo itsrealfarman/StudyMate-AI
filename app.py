@@ -1,6 +1,8 @@
+import streamlit as st
+
 from utils.pdf_reader import extract_text
 from utils.text_splitter import split_text
-import streamlit as st
+from utils.vector_store import create_vector_store
 
 st.set_page_config(
     page_title="StudyMate AI",
@@ -18,7 +20,10 @@ if uploaded_file:
 
     chunks = split_text(text)
 
+    vector_store = create_vector_store(chunks)
+
     st.success("PDF Loaded Successfully!")
+    st.success("Vector Database Created!")
 
     st.subheader("Extracted Text")
     st.write(text[:2000])
